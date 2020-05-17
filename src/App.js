@@ -5,6 +5,8 @@ import Quesiton from "./components/Question";
 import "./App.css";
 import Answers from "./components/Answers";
 import { questions } from "./questions/questions";
+import QuizContext from './context/QuizContext';
+
 import {
   SET_ANSWERS,
   SET_CURRENT_QUESTION,
@@ -12,11 +14,9 @@ import {
   SET_ERROR,
   SET_SHOW_RESULTS,
   RESET_QUIZ,
-} from "./reducers/types";
+} from './reducers/types.js';
 
-import quizReducer from "./reducers/QuizReducer"
-
-
+import quizReducer from './reducers/QuizReducer';
 
 function App() {
   // const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -26,15 +26,16 @@ function App() {
   // const [error, setError] = useState("");
 
   const initialState = {
+    questions,
     currentQuestion: 0,
-    currentAnswer: "",
+    currentAnswer: '',
     answers: [],
     showResults: false,
-    error: "",
+    error: '',
   };
 
   const [state, dispatch] = useReducer(quizReducer, initialState);
-  const { currentQuestion, currentAnswer, answers, showResults, error } = state;
+  const {currentQuestion, currentAnswer, answers, showResults, error} = state;
 
   const question = questions[currentQuestion];
 
@@ -76,16 +77,16 @@ function App() {
     // setShowResults(false);
   };
   const next = () => {
-    const answer = { questionId: question.id, answer: currentAnswer };
+    const answer = {questionId: question.id, answer: currentAnswer};
     if (!currentAnswer) {
-      dispatch({ type: SET_ERROR, error: "Please select an option" });
+      dispatch({type: SET_ERROR, error: 'Please select an option'});
       // setError("Please select an option");
       return;
     }
 
     answers.push(answer);
-    dispatch({ type: SET_ANSWERS, answers: answers });
-    dispatch({ type: SET_CURRENT_ANSWER, currentAnswer: "" });
+    dispatch({type: SET_ANSWERS, answers});
+    dispatch({type: SET_CURRENT_ANSWER, currentAnswer: ''});
 
     // setAnswers(answers);
     // setcurrentAnswer("");
@@ -98,7 +99,7 @@ function App() {
       // setCurrentQuestion(currentQuestion + 1);
       return;
     }
-    dispatch({ type: SET_SHOW_RESULTS, showResults: true });
+    dispatch({type: SET_SHOW_RESULTS, showResults: true});
     // setShowResults(true);
   };
 
@@ -114,20 +115,24 @@ function App() {
     );
   } else {
     return (
-      <div className="container">
-        <Progress total={questions.length} current={currentQuestion + 1} />
-        <Quesiton question={question.question} />
-        {renderError()}
-        <Answers
-          question={question}
-          currentAnswer={currentAnswer}
-          dispatch={dispatch}
-          // handleClick={handleClick}
-        />
-        <button className="btn btn-primary" onClick={next}>
-          Confirm and Continue
-        </button>
-      </div>
+      <QuizContext.Provider value={{state, dispatch}}>
+        <div className="container">
+          <Progress total={questions.length} current={currentQuestion + 1} />
+          <Quesiton
+          // question={question.question}
+          />
+          {renderError()}
+          <Answers
+            // question={question}
+            // currentAnswer={currentAnswer}
+            // dispatch={dispatch}
+            // handleClick={handleClick}
+          />
+          <button className="btn btn-primary" onClick={next}>
+            Confirm and Continue
+          </button>
+        </div>
+      </QuizContext.Provider>
     );
   }
 }

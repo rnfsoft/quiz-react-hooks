@@ -1,8 +1,13 @@
-import React from 'react';
+import React, {useContext} from 'react';
+import QuizContext from '../context/QuizContext';
 
-const Question = props => {
+const Question = () => {
+    const {state,} = useContext(QuizContext);
+    const {currentQuestion, questions} = state;
+    const question = questions[currentQuestion];
+
     return (
-        <h1>{props.question}</h1>
+        <h1>{question.question}</h1>
     );
 };
 
