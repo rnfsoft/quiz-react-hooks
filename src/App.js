@@ -4,58 +4,18 @@ import Progress from "./components/Progress";
 import Quesiton from "./components/Question";
 import "./App.css";
 import Answers from "./components/Answers";
-import {questions} from "./questions/questions"
+import { questions } from "./questions/questions";
+import {
+  SET_ANSWERS,
+  SET_CURRENT_QUESTION,
+  SET_CURRENT_ANSWER,
+  SET_ERROR,
+  SET_SHOW_RESULTS,
+  RESET_QUIZ,
+} from "./reducers/types";
 
-const SET_CURRENT_ANSWER = 'SET_CURRENT_ANSWER';
-const SET_CURRENT_QUESTION = 'SET_CURRENT_QUESTION';
-const SET_ERROR = 'SET_ERROR';
-const SET_SHOW_RESULTS = 'SET_SHOW_RESULTS';
-const SET_ANSWERS = 'SET_ANSWERS';
-const RESET_QUIZ = 'RESET_QUIZ';
+import quizReducer from "./reducers/QuizReducer"
 
-function quizReducer(state, action){
-  switch(action.type){
-    case SET_CURRENT_ANSWER:
-      return{
-        ...state,
-        currentAnswer: action.currentAnswer,
-      };
-    case SET_CURRENT_QUESTION:
-      return{
-        ...state,
-        currentQuestion: action.currentQuestion,
-      };
-    case SET_ERROR:
-      return{
-        ...state,
-        error: action.error,
-      };
-
-    case SET_SHOW_RESULTS:
-      return{
-        ...state,
-        showResults: action.showResults,
-      };
-
-    case SET_ANSWERS:
-      return{
-        ...state,
-        answers: action.answers,
-      };
-
-    case RESET_QUIZ:
-      return{
-        ...state,
-        answers:[],
-        currentQuestion:0,
-        currentAnswer: '',
-        showResults: false,
-        error:''
-      }
-    default:
-      return state;
-  }
-}
 
 
 function App() {
@@ -65,25 +25,18 @@ function App() {
   // const [showResults, setShowResults] = useState(false);
   // const [error, setError] = useState("");
 
-  const initialState ={
+  const initialState = {
     currentQuestion: 0,
-    currentAnswer: '',
+    currentAnswer: "",
     answers: [],
     showResults: false,
-    error: '',
-  }
+    error: "",
+  };
 
   const [state, dispatch] = useReducer(quizReducer, initialState);
-  const {currentQuestion, currentAnswer, answers, showResults, error} = state;
+  const { currentQuestion, currentAnswer, answers, showResults, error } = state;
 
   const question = questions[currentQuestion];
-  const handleClick = (e) => {
-    dispatch({type: SET_CURRENT_ANSWER, currentAnswer: e.target.value});
-    dispatch({type: SET_ERROR, currentAnswer: ''});
-
-    // setcurrentAnswer(e.target.value);
-    // setError("");
-  };
 
   const renderError = () => {
     if (!error) {
@@ -116,7 +69,7 @@ function App() {
   };
 
   const restart = () => {
-    dispatch({type:RESET_QUIZ});
+    dispatch({ type: RESET_QUIZ });
     // setAnswers([]);
     // setcurrentAnswer("");
     // setCurrentQuestion(0);
@@ -125,26 +78,27 @@ function App() {
   const next = () => {
     const answer = { questionId: question.id, answer: currentAnswer };
     if (!currentAnswer) {
-      dispatch({type: SET_ERROR, error: 'Please select an option'});
+      dispatch({ type: SET_ERROR, error: "Please select an option" });
       // setError("Please select an option");
       return;
     }
 
     answers.push(answer);
-    dispatch({type: SET_ANSWERS, answers: answers});
-    dispatch({type: SET_CURRENT_ANSWER, currentAnswer: ''});
+    dispatch({ type: SET_ANSWERS, answers: answers });
+    dispatch({ type: SET_CURRENT_ANSWER, currentAnswer: "" });
 
     // setAnswers(answers);
     // setcurrentAnswer("");
 
-
-
     if (currentQuestion + 1 < questions.length) {
-      dispatch({type: SET_CURRENT_QUESTION, currentQuestion: currentQuestion+1});
+      dispatch({
+        type: SET_CURRENT_QUESTION,
+        currentQuestion: currentQuestion + 1,
+      });
       // setCurrentQuestion(currentQuestion + 1);
       return;
     }
-    dispatch({type: SET_SHOW_RESULTS, showResults:true});
+    dispatch({ type: SET_SHOW_RESULTS, showResults: true });
     // setShowResults(true);
   };
 
@@ -167,7 +121,8 @@ function App() {
         <Answers
           question={question}
           currentAnswer={currentAnswer}
-          handleClick={handleClick}
+          dispatch={dispatch}
+          // handleClick={handleClick}
         />
         <button className="btn btn-primary" onClick={next}>
           Confirm and Continue
