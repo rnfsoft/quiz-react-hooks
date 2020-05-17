@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useReducer } from "react";
 
 import Progress from "./components/Progress";
 import Quesiton from "./components/Question";
@@ -6,17 +6,83 @@ import "./App.css";
 import Answers from "./components/Answers";
 import {questions} from "./questions/questions"
 
-function App() {
-  const [currentQuesiton, setCurrentQuestion] = useState(0);
-  const [currentAnswer, setCurrentAnswer] = useState("");
-  const [answers, setAnswers] = useState([]);
-  const [showResults, setShowResults] = useState(false);
-  const [error, setError] = useState("");
+const SET_CURRENT_ANSWER = 'SET_CURRENT_ANSWER';
+const SET_CURRENT_QUESTION = 'SET_CURRENT_QUESTION';
+const SET_ERROR = 'SET_ERROR';
+const SET_SHOW_RESULTS = 'SET_SHOW_RESULTS';
+const SET_ANSWERS = 'SET_ANSWERS';
+const RESET_QUIZ = 'RESET_QUIZ';
 
-  const question = questions[currentQuesiton];
+function quizReducer(state, action){
+  switch(action.type){
+    case SET_CURRENT_ANSWER:
+      return{
+        ...state,
+        currentAnswer: action.currentAnswer,
+      };
+    case SET_CURRENT_QUESTION:
+      return{
+        ...state,
+        currentQuestion: action.currentQuestion,
+      };
+    case SET_ERROR:
+      return{
+        ...state,
+        error: action.error,
+      };
+
+    case SET_SHOW_RESULTS:
+      return{
+        ...state,
+        showResults: action.showResults,
+      };
+
+    case SET_ANSWERS:
+      return{
+        ...state,
+        answers: action.answers,
+      };
+
+    case RESET_QUIZ:
+      return{
+        ...state,
+        answers:[],
+        currentQuestion:0,
+        currentAnswer: '',
+        showResults: false,
+        error:''
+      }
+    default:
+      return state;
+  }
+}
+
+
+function App() {
+  // const [currentQuestion, setCurrentQuestion] = useState(0);
+  // const [currentAnswer, setcurrentAnswer] = useState("");
+  // const [answers, setAnswers] = useState([]);
+  // const [showResults, setShowResults] = useState(false);
+  // const [error, setError] = useState("");
+
+  const initialState ={
+    currentQuestion: 0,
+    currentAnswer: '',
+    answers: [],
+    showResults: false,
+    error: '',
+  }
+
+  const [state, dispatch] = useReducer(quizReducer, initialState);
+  const {currentQuestion, currentAnswer, answers, showResults, error} = state;
+
+  const question = questions[currentQuestion];
   const handleClick = (e) => {
-    setCurrentAnswer(e.target.value);
-    setError("");
+    dispatch({type: SET_CURRENT_ANSWER, currentAnswer: e.target.value});
+    dispatch({type: SET_ERROR, currentAnswer: ''});
+
+    // setcurrentAnswer(e.target.value);
+    // setError("");
   };
 
   const renderError = () => {
@@ -50,28 +116,36 @@ function App() {
   };
 
   const restart = () => {
-    setAnswers([]);
-    setCurrentAnswer("");
-    setCurrentQuestion(0);
-    setShowResults(false);
+    dispatch({type:RESET_QUIZ});
+    // setAnswers([]);
+    // setcurrentAnswer("");
+    // setCurrentQuestion(0);
+    // setShowResults(false);
   };
   const next = () => {
     const answer = { questionId: question.id, answer: currentAnswer };
-    answers.push(answer);
-    setAnswers(answers);
-    setCurrentAnswer("");
-
     if (!currentAnswer) {
-      setError("Please select an option");
+      dispatch({type: SET_ERROR, error: 'Please select an option'});
+      // setError("Please select an option");
       return;
     }
 
-    if (currentQuesiton + 1 < questions.length) {
-      setCurrentQuestion(currentQuesiton + 1);
+    answers.push(answer);
+    dispatch({type: SET_ANSWERS, answers: answers});
+    dispatch({type: SET_CURRENT_ANSWER, currentAnswer: ''});
+
+    // setAnswers(answers);
+    // setcurrentAnswer("");
+
+
+
+    if (currentQuestion + 1 < questions.length) {
+      dispatch({type: SET_CURRENT_QUESTION, currentQuestion: currentQuestion+1});
+      // setCurrentQuestion(currentQuestion + 1);
       return;
     }
-
-    setShowResults(true);
+    dispatch({type: SET_SHOW_RESULTS, showResults:true});
+    // setShowResults(true);
   };
 
   if (showResults) {
@@ -87,7 +161,7 @@ function App() {
   } else {
     return (
       <div className="container">
-        <Progress total={questions.length} current={currentQuesiton + 1} />
+        <Progress total={questions.length} current={currentQuestion + 1} />
         <Quesiton question={question.question} />
         {renderError()}
         <Answers
